@@ -29,7 +29,7 @@ hosted on Vercel.
    `supabase/migrations/` in order.
 2. **Phone login (VerifyNow)**: sign up at Message Central, choose VerifyNow, and copy your Customer ID and
    password into `VERIFYNOW_CUSTOMER_ID` and `VERIFYNOW_PASSWORD`. VerifyNow sends from its own registered sender,
-   so you don't need your own DLT registration. Each code costs about ₹0.2.
+   so you don't need your own DLT registration. Each code costs about ₹0.30.
    **Bot check**: in Cloudflare, add a Turnstile widget for your domain and copy the site key and secret key.
    In Supabase, under Authentication → Providers → Email, keep email enabled (phone logins use a stand-in address
    on `PHONE_LOGIN_EMAIL_DOMAIN` that never receives mail) and turn off "Confirm email".
