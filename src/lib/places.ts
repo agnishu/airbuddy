@@ -64,3 +64,25 @@ export async function placeDetails(placeId: string, sessionToken?: string): Prom
     lng: data.location?.longitude,
   };
 }
+
+/** Best-effort airport coordinates from its code, for when the flight service has none. */
+export async function findAirport(iata: string): Promise<{ lat: number; lng: number } | null> {
+  if (!process.env.GOOGLE_MAPS_API_KEY) return null;
+  try {
+    const res = await fetch(`${API}/places:searchText`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey(),
+        "X-Goog-FieldMask": "places.location",
+      },
+      body: JSON.stringify({ textQuery: `${iata} airport`, includedType: "airport", pageSize: 1 }),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const location = (await res.json()).places?.[0]?.location;
+    return location ? { lat: location.latitude, lng: location.longitude } : null;
+  } catch {
+    return null;
+  }
+}

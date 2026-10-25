@@ -17,6 +17,7 @@ hosted on Vercel.
 | Flight lookups (AeroDataBox), cached per flight per day | `src/lib/flights.ts` |
 | Address search (Google Places API, new) | `src/lib/places.ts` |
 | Ride time for arrivals: live ETA + 45 min (domestic) / 75 min (international) | `src/lib/rideTime.ts` |
+| Booking: one rider claims it, opens Uber (or Ola) with the trip filled in, then shares the trip link and driver | `src/app/chat/[id]/Booking.tsx`, `src/lib/rideLinks.ts`, `supabase/migrations/20261025000300_booking.sql` |
 | UPI donation prompt after a confirmed ride | `src/app/chat/[id]/Donation.tsx` |
 | Trips and chats deleted 7 days after travel | `supabase/migrations/20261025000100_cleanup.sql` |
 

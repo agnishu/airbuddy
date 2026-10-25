@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlightLookupError, lookupFlight } from "@/lib/flights";
-import { placeDetails, PlacesError } from "@/lib/places";
+import { findAirport, placeDetails, PlacesError } from "@/lib/places";
 import { kerbsideTime, normalizeFlightNumber, type Direction } from "@/lib/rideTime";
 import { requireUser } from "@/lib/supabase/server";
 
@@ -42,6 +42,7 @@ export async function createTrip(input: NewTrip): Promise<{ error: string }> {
 
   let airportIata: string, airportName: string | null, terminal: string | null;
   let flightTime: Date, isInternational: boolean;
+  let airport: { lat: number; lng: number } | null = null;
 
   if (input.legIndex !== null) {
     let flights;
@@ -58,6 +59,7 @@ export async function createTrip(input: NewTrip): Promise<{ error: string }> {
     terminal = end.terminal;
     flightTime = new Date(end.time);
     isInternational = flight.isInternational;
+    if (end.lat !== null && end.lng !== null) airport = { lat: end.lat, lng: end.lng };
   } else {
     const m = input.manual;
     if (!m || !/^[A-Za-z]{3}$/.test(m.airportIata) || Number.isNaN(Date.parse(m.flightTime))) {
@@ -88,6 +90,9 @@ export async function createTrip(input: NewTrip): Promise<{ error: string }> {
   const area = input.area.trim().slice(0, 60);
   if (!area) return { error: "Add your area or neighbourhood, for example Indiranagar." };
 
+  // Used to fill in the airport when the riders book their cab.
+  airport ??= await findAirport(airportIata);
+
   const { data, error } = await supabase
     .from("trips")
     .insert({
@@ -97,6 +102,8 @@ export async function createTrip(input: NewTrip): Promise<{ error: string }> {
       flight_date: input.flightDate,
       airport_iata: airportIata,
       airport_name: airportName,
+      airport_lat: airport?.lat ?? null,
+      airport_lng: airport?.lng ?? null,
       terminal,
       is_international: isInternational,
       flight_time: flightTime.toISOString(),

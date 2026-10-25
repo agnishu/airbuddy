@@ -3,6 +3,9 @@ export type FlightEnd = {
   name: string;
   city: string;
   countryCode: string;
+  /** Airport coordinates, when the flight service provides them. */
+  lat: number | null;
+  lng: number | null;
   terminal: string | null;
   /** ISO timestamp: live estimate when known, otherwise scheduled. */
   time: string;
@@ -26,7 +29,14 @@ function toIso(value: unknown) {
 }
 
 type RawEnd = {
-  airport?: { iata?: string; name?: string; shortName?: string; municipalityName?: string; countryCode?: string };
+  airport?: {
+    iata?: string;
+    name?: string;
+    shortName?: string;
+    municipalityName?: string;
+    countryCode?: string;
+    location?: { lat?: number; lon?: number };
+  };
   scheduledTime?: { utc?: string };
   revisedTime?: { utc?: string };
   predictedTime?: { utc?: string };
@@ -41,6 +51,8 @@ function parseEnd(raw: RawEnd | undefined): FlightEnd | null {
     name: raw.airport.shortName ?? raw.airport.name ?? raw.airport.iata,
     city: raw.airport.municipalityName ?? "",
     countryCode: raw.airport.countryCode ?? "",
+    lat: typeof raw.airport.location?.lat === "number" ? raw.airport.location.lat : null,
+    lng: typeof raw.airport.location?.lon === "number" ? raw.airport.location.lon : null,
     terminal: raw.terminal ?? null,
     time: toIso(raw.revisedTime?.utc) ?? toIso(raw.predictedTime?.utc) ?? scheduled,
     scheduledTime: scheduled,
