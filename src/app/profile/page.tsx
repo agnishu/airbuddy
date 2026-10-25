@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 import { Header } from "@/components/Header";
 import { requireUser } from "@/lib/supabase/server";
 import { saveProfile, signOut } from "./actions";
+import { PhotoUpload } from "./PhotoUpload";
 
 const genders = [
   { value: "female", label: "Woman" },
@@ -17,18 +17,15 @@ export default async function ProfilePage({ searchParams }: PageProps<"/profile"
 
   return (
     <>
-      <Header title="Your profile" back={profile?.gender ? "/trips" : undefined} />
+      <Header title="Your profile" back={profile?.gender && profile?.photo_url ? "/trips" : undefined} />
       <main className="flex-1 space-y-6 px-4 py-6">
-        <div className="flex items-center gap-4">
-          {profile?.photo_url ? (
-            <img src={profile.photo_url} alt="" className="h-16 w-16 rounded-full object-cover" referrerPolicy="no-referrer" />
-          ) : (
-            <div className="h-16 w-16 rounded-full bg-slate-200" />
-          )}
-          <p className="text-sm text-slate-600">Other riders see your first name and photo. Your email and address stay private.</p>
-        </div>
+        <PhotoUpload userId={user.id} initialUrl={profile?.photo_url ?? null} />
 
-        {error && <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">Please enter your name and choose an option below.</p>}
+        {error && (
+          <p className="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+            {error === "photo" ? "Please add a photo so your match can recognise you." : "Please enter your name and choose an option below."}
+          </p>
+        )}
 
         <form action={saveProfile} className="space-y-5">
           <input type="hidden" name="next" value={typeof next === "string" ? next : "/trips"} />
