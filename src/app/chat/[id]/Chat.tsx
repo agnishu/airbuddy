@@ -4,7 +4,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-export type Plan = { pickup: string; time: string; booker: "proposer" | "partner"; split: string };
+export type Plan = {
+  pickup: string;
+  time: string;
+  booker: "proposer" | "partner";
+  split: string;
+  /** Trips from the airport: where each rider gets dropped, shared by the riders. */
+  drops?: string;
+};
 
 export type Message = {
   id: string;
@@ -35,6 +42,7 @@ export function Chat({
   confirmed,
   partnerName,
   defaultTime,
+  fromAirport,
 }: {
   requestId: string;
   userId: string;
@@ -42,6 +50,7 @@ export function Chat({
   confirmed: boolean;
   partnerName: string;
   defaultTime: string;
+  fromAirport: boolean;
 }) {
   const supabase = useMemo(() => createClient(), []);
   const router = useRouter();
@@ -52,6 +61,7 @@ export function Chat({
   const [pickup, setPickup] = useState("");
   const [time, setTime] = useState(() => toLocalInput(defaultTime));
   const [booker, setBooker] = useState<Plan["booker"]>("proposer");
+  const [drops, setDrops] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
 
   // New messages and plan updates arrive live.
@@ -92,7 +102,13 @@ export function Chat({
 
   async function proposePlan(e: React.FormEvent) {
     e.preventDefault();
-    const plan: Plan = { pickup: pickup.trim().slice(0, 200), time: new Date(time).toISOString(), booker, split: "50/50" };
+    const plan: Plan = {
+      pickup: pickup.trim().slice(0, 200),
+      time: new Date(time).toISOString(),
+      booker,
+      split: "50/50",
+      ...(fromAirport && drops.trim() ? { drops: drops.trim().slice(0, 300) } : {}),
+    };
     const { error } = await supabase.rpc("propose_plan", { p_request_id: requestId, p_plan: plan });
     if (error) return setError(error.message);
     setPlanOpen(false);
@@ -123,6 +139,7 @@ export function Chat({
                 <p>Pickup: {m.plan.pickup}</p>
                 <p>Time: {formatTime(m.plan.time)}</p>
                 <p>Books the cab: {bookerName}</p>
+                {m.plan.drops && <p>Drop-offs: {m.plan.drops}</p>}
                 <p>Fare split: {m.plan.split}</p>
                 {m.plan_status === "accepted" && <p className="font-semibold text-emerald-700">Accepted</p>}
                 {m.plan_status === "superseded" && <p className="text-slate-500">Replaced by a newer plan</p>}
@@ -154,7 +171,7 @@ export function Chat({
               <label className="label" htmlFor="pickup">
                 Pickup point
               </label>
-              <input id="pickup" className="field" value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder="e.g. Indiranagar metro, gate 2" required />
+              <input id="pickup" className="field" value={pickup} onChange={(e) => setPickup(e.target.value)} placeholder={fromAirport ? "e.g. Arrivals, pillar 5" : "e.g. Indiranagar metro, gate 2"} required />
             </div>
             <div>
               <label className="label" htmlFor="ptime">
@@ -171,6 +188,15 @@ export function Chat({
                 <option value="partner">{partnerName}</option>
               </select>
             </div>
+            {fromAirport && (
+              <div>
+                <label className="label" htmlFor="drops">
+                  Drop-off points
+                </label>
+                <input id="drops" className="field" value={drops} onChange={(e) => setDrops(e.target.value)} placeholder="e.g. Me: Domlur flyover, then you: 12th Main" maxLength={300} />
+                <p className="mt-1 text-xs text-slate-500">Only what you both agree to share. Whoever books adds the first drop-off as a stop in Uber.</p>
+              </div>
+            )}
             <p className="text-sm text-slate-500">The fare is split 50/50.</p>
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => setPlanOpen(false)} className="btn-secondary">
