@@ -11,7 +11,8 @@ export default function PrivacyPage() {
       </p>
       <h2>What we collect</h2>
       <p>
-        Your name, photo and email from Google sign-in; your gender, if you choose to give it; and for each trip, your flight,
+        Your mobile number (if you log in with it) or your name, photo and email (if you use Google sign-in); the profile
+        photo you upload; your gender, if you choose to give it; and for each trip, your flight,
         address, and the time you want to travel.
       </p>
       <h2>What other riders see</h2>
@@ -26,8 +27,8 @@ export default function PrivacyPage() {
       </p>
       <h2>Who we share it with</h2>
       <p>
-        Our service providers only: Supabase (database, in India), Vercel (hosting), Google (sign-in and address search) and our
-        flight data provider. We don&apos;t sell your data.
+        Our service providers only: Supabase (database, in India), Vercel (hosting), Google (sign-in and address search), Message Central
+        (sends login codes by SMS), Cloudflare (bot check on login) and our flight data provider. We don&apos;t sell your data.
       </p>
     </Prose>
   );

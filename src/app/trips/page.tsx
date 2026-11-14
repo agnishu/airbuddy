@@ -14,8 +14,8 @@ const statusLabel = { open: "Looking for a match", matched: "Ride confirmed", ca
 
 export default async function TripsPage() {
   const { supabase, user } = await requireUser();
-  const { data: profile } = await supabase.from("profiles").select("gender").eq("id", user.id).single();
-  if (!profile?.gender) redirect("/profile?next=/trips");
+  const { data: profile } = await supabase.from("profiles").select("gender, photo_url").eq("id", user.id).single();
+  if (!profile?.gender || !profile?.photo_url) redirect("/profile?next=/trips");
 
   const { data } = await supabase
     .from("trips")

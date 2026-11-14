@@ -12,9 +12,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      const { data: profile } = await supabase.from("profiles").select("gender").single();
+      const { data: profile } = await supabase.from("profiles").select("gender, photo_url").single();
       // New riders set their gender first so same-gender matching can default correctly.
-      return NextResponse.redirect(`${origin}${profile?.gender ? safeNext : `/profile?next=${encodeURIComponent(safeNext)}`}`);
+      return NextResponse.redirect(`${origin}${profile?.gender && profile?.photo_url ? safeNext : `/profile?next=${encodeURIComponent(safeNext)}`}`);
     }
   }
   return NextResponse.redirect(`${origin}/login?error=1`);

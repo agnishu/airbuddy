@@ -12,6 +12,9 @@ export async function saveProfile(formData: FormData) {
   const next = String(formData.get("next") ?? "/trips");
   if (!fullName || !GENDERS.includes(gender)) redirect(`/profile?error=1&next=${encodeURIComponent(next)}`);
 
+  const { data: current } = await supabase.from("profiles").select("photo_url").eq("id", user.id).single();
+  if (!current?.photo_url) redirect(`/profile?error=photo&next=${encodeURIComponent(next)}`);
+
   const { error } = await supabase.from("profiles").update({ full_name: fullName, gender }).eq("id", user.id);
   if (error) redirect(`/profile?error=1&next=${encodeURIComponent(next)}`);
   redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/trips");

@@ -10,8 +10,8 @@ $$;
 
 -- Riders: Asha (female), Bela (female), Chetan (male), Dev (male), Esha (female, far away)
 insert into auth.users (id, raw_user_meta_data) values
-  ('00000000-0000-0000-0000-00000000000a', '{"full_name": "Asha Rao", "avatar_url": "https://example.com/a.png"}'),
-  ('00000000-0000-0000-0000-00000000000b', '{"name": "Bela Shah"}'),
+  ('00000000-0000-0000-0000-00000000000a', '{"full_name": "Asha Rao", "avatar_url": "https://lh3.googleusercontent.com/a/asha"}'),
+  ('00000000-0000-0000-0000-00000000000b', '{"name": "Bela Shah", "picture": "https://lh3.googleusercontent.com/a/bela"}'),
   ('00000000-0000-0000-0000-00000000000c', '{"full_name": "Chetan Iyer"}'),
   ('00000000-0000-0000-0000-00000000000d', '{"full_name": "Dev Kumar"}'),
   ('00000000-0000-0000-0000-00000000000e', '{"full_name": "Esha Nair"}');
