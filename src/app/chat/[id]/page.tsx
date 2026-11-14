@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { Header } from "@/components/Header";
 import { requireUser } from "@/lib/supabase/server";
 import type { RequestStatus } from "@/lib/types";
-import { Chat, type Message } from "./Chat";
+import { Booking } from "./Booking";
+import { Chat, type Message, type Plan } from "./Chat";
 import { blockRider, cancelRide, reportRider } from "./actions";
 import { Donation } from "./Donation";
 
@@ -16,6 +17,20 @@ type Details = {
   direction: "to_airport" | "from_airport";
   airport_iata: string;
   my_ride_time: string;
+};
+
+type BookingDetails = {
+  booker_id: string | null;
+  booking_link: string | null;
+  driver_details: string | null;
+  my_address: string;
+  my_lat: number;
+  my_lng: number;
+  airport_name: string | null;
+  airport_iata: string;
+  airport_lat: number | null;
+  airport_lng: number | null;
+  plan: Plan | null;
 };
 
 export default async function ChatPage({ params, searchParams }: PageProps<"/chat/[id]">) {
@@ -33,6 +48,10 @@ export default async function ChatPage({ params, searchParams }: PageProps<"/cha
     .order("created_at");
 
   const open = details.status === "accepted" || details.status === "confirmed";
+  const { data: booking } =
+    details.status === "confirmed"
+      ? await supabase.rpc("booking_details", { p_request_id: id }).single<BookingDetails>()
+      : { data: null };
 
   return (
     <>
@@ -55,6 +74,31 @@ export default async function ChatPage({ params, searchParams }: PageProps<"/cha
             <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">
               Ride confirmed. Share your trip details with someone you trust, and meet at the agreed pickup point.
             </p>
+            {booking && (
+              <Booking
+                requestId={id}
+                userId={user.id}
+                partnerName={details.partner_first_name}
+                trip={{
+                  direction: details.direction,
+                  myAddress: booking.my_address,
+                  myLat: booking.my_lat,
+                  myLng: booking.my_lng,
+                  airportName: booking.airport_name ?? `${booking.airport_iata} airport`,
+                  airportLat: booking.airport_lat,
+                  airportLng: booking.airport_lng,
+                }}
+                state={{
+                  bookerId: booking.booker_id,
+                  link: booking.booking_link,
+                  driver: booking.driver_details,
+                  pickup: booking.plan?.pickup ?? null,
+                  drops: booking.plan?.drops ?? null,
+                }}
+                uberClientId={process.env.NEXT_PUBLIC_UBER_CLIENT_ID}
+                olaToken={process.env.NEXT_PUBLIC_OLA_XAPP_TOKEN}
+              />
+            )}
             <Donation requestId={id} upiId={process.env.NEXT_PUBLIC_UPI_ID} />
           </div>
         )}
@@ -67,6 +111,7 @@ export default async function ChatPage({ params, searchParams }: PageProps<"/cha
             confirmed={details.status === "confirmed"}
             partnerName={details.partner_first_name}
             defaultTime={details.my_ride_time}
+            fromAirport={details.direction === "from_airport"}
           />
         ) : (
           <p className="m-4 rounded-xl bg-slate-100 p-3 text-sm text-slate-600">This chat is closed.</p>
