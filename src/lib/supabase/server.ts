@@ -3,7 +3,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { supabasePublishableKey, supabaseUrl } from "./env";
+import { supabasePublishableKey, supabaseSecretKey, supabaseUrl } from "./env";
 
 export async function createClient() {
   const cookieStore = await cookies();
@@ -33,7 +33,7 @@ export async function requireUser() {
 
 /** Bypasses row-level security. Server-only, for shared caches. */
 export function createServiceClient() {
-  return createAdminClient(supabaseUrl, process.env.SUPABASE_SECRET_KEY!, {
+  return createAdminClient(supabaseUrl, supabaseSecretKey()!, {
     auth: { persistSession: false },
   });
 }

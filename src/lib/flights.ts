@@ -1,4 +1,5 @@
 import "server-only";
+import { supabaseSecretKey } from "@/lib/supabase/env";
 import { createServiceClient } from "@/lib/supabase/server";
 import { normalizeFlightNumber } from "@/lib/rideTime";
 import { parseFlights, type Flight } from "@/lib/flightParse";
@@ -31,7 +32,7 @@ export async function lookupFlight(rawNumber: string, date: string): Promise<Fli
     throw new FlightLookupError("Enter a flight number like 6E123 and a date.");
   }
 
-  const db = process.env.SUPABASE_SECRET_KEY ? createServiceClient() : null;
+  const db = supabaseSecretKey() ? createServiceClient() : null;
   if (db) {
     const { data } = await db
       .from("flight_cache")
