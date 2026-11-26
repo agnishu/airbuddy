@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
+  if (!isSupabaseConfigured) return <SetupNeeded />;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -39,6 +42,22 @@ export default async function Home() {
           </Link>
         </p>
       </div>
+    </main>
+  );
+}
+
+function SetupNeeded() {
+  return (
+    <main className="flex flex-1 flex-col justify-center px-6 py-10">
+      <p className="text-sm font-semibold tracking-wide text-sky-700 uppercase">Airbuddy</p>
+      <h1 className="mt-3 text-3xl font-bold">Almost ready</h1>
+      <p className="mt-4 text-slate-600">
+        The app is deployed but not connected to its database yet. In Vercel, add{" "}
+        <code className="rounded bg-slate-100 px-1">NEXT_PUBLIC_SUPABASE_URL</code>,{" "}
+        <code className="rounded bg-slate-100 px-1">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> and{" "}
+        <code className="rounded bg-slate-100 px-1">SUPABASE_SECRET_KEY</code> under Settings → Environment
+        Variables, then redeploy.
+      </p>
     </main>
   );
 }

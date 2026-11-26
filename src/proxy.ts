@@ -1,12 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { supabasePublishableKey, supabaseUrl } from "@/lib/supabase/env";
+import { isSupabaseConfigured, supabasePublishableKey, supabaseUrl } from "@/lib/supabase/env";
 
 const publicPaths = ["/", "/login", "/auth/callback", "/privacy", "/terms"];
 
 // Refreshes the Supabase session cookie on every request and keeps
 // signed-out visitors on public pages.
 export async function proxy(request: NextRequest) {
+  // Without Supabase settings every request would crash. Send visitors to the
+  // home page, which explains that setup isn't finished.
+  if (!isSupabaseConfigured) {
+    if (request.nextUrl.pathname === "/" || request.nextUrl.pathname.startsWith("/api/")) return NextResponse.next();
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(supabaseUrl, supabasePublishableKey, {
